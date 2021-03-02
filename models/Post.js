@@ -29,6 +29,7 @@ Post.init(
         type: DataTypes.INTEGER,
         references: {
           model: 'user',//joing user Model on id column
+          // association is still required at index.js of models
           key: 'id'
         }
       }

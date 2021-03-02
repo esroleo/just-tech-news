@@ -15,7 +15,9 @@ app.use(routes);
 // .sync will create table if it does not exist
 // force: true will drop and re-create all the database tables
 // on start up.
-// great for testing.
+// by setting to true, it will check dynamically update any table
+// new associations. Enable after making changes. Check if user
+// table is empty and then enable back.
 sequelize.sync({ force: false }).then(() => {
   app.listen(PORT, () => console.log('Now listening'));
 });
