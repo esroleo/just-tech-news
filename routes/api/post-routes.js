@@ -1,6 +1,6 @@
 const router = require('express').Router();
 // Imported to model (tables) which are post and user tables.
-const { Post, User, Vote } = require('../../models');
+const { Post, User, Vote, Comment } = require('../../models');
 //To do calculations
 const sequelize = require('../../config/connection');
 
@@ -10,6 +10,7 @@ router.get('/', (req, res) => {
     console.log('======================');
     Post.findAll({
       // Query configuration
+      order: [['created_at', 'DESC']], 
       attributes: [
         'id',
         'post_url',
@@ -17,9 +18,17 @@ router.get('/', (req, res) => {
         'created_at',
         [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
       ],
-      order: [['created_at', 'DESC']], 
+      
       // to return everything  include:[User]
       include: [
+        {
+          model: Comment,
+          attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+          include: {
+            model: User,
+            attributes: ['username']
+          }
+        },
         {
           model: User,
           attributes: ['username']
@@ -48,10 +57,18 @@ router.get('/:id', (req, res) => {
           [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
         ],
         include: [
-        {
-            model: User,
-            attributes: ['username']
-        }
+          {
+            model: Comment,
+            attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+            include: {
+              model: User,
+              attributes: ['username']
+            }
+          },
+          {
+              model: User,
+              attributes: ['username']
+          }
         ]
     })
         .then(dbPostData => {
@@ -128,17 +145,17 @@ router.delete('/:id', (req, res) => {
         id: req.params.id
         }
     })
-        .then(dbPostData => {
-        if (!dbPostData) {
-            res.status(404).json({ message: 'No post found with this id' });
-            return;
-        }
-        res.json(dbPostData);
-        })
-        .catch(err => {
-        console.log(err);
-        res.status(500).json(err);
-        });
+    .then(dbPostData => {
+      if (!dbPostData) {
+          res.status(404).json({ message: 'No post found with this id' });
+          return;
+      }
+      res.json(dbPostData);
+      })
+      .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
   module.exports = router;
