@@ -1,15 +1,39 @@
 const express = require('express');
-const routes = require('./routes');
+const path = require('path');
+const routes = require('./controllers');
 const sequelize = require('./config/connection');
+// Start of handlebars libraries //
+const exphbs = require('express-handlebars');
+const hbs = exphbs.create({});
+// End of handlebars libraries //
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// handlebars init
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
+
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// sync/link to all of public paths
+/* It has to go before routes
+The express.static() method is a built-in Express.js 
+middleware function that can take all of the contents
+of a folder and serve them as static assets. This is 
+useful for front-end specific files like images, style
+sheets, and JavaScript files.
+*/
+app.use(express.static(path.join(__dirname, 'public')));
+
+
 // turn on routes
 app.use(routes);
+
+
 
 // turn on connection to db and server
 // .sync will create table if it does not exist
