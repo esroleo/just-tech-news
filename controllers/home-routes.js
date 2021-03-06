@@ -3,6 +3,8 @@ const sequelize = require('../config/connection');
 const { Post, User, Comment } = require('../models');
 
 router.get('/', (req, res) => {
+  // console log session information
+  //console.log(req.session);
   Post.findAll({
     attributes: [
       'id',
@@ -32,7 +34,7 @@ router.get('/', (req, res) => {
       // render is from handlebars engine
       // to avoid getting all of sequelize object, we need the plain rendering
       // get({ plain: true }) will get us the attributes that we defined.
-      console.log(dbPostData[0].get({ plain: true }));
+     // console.log(dbPostData[0].get({ plain: true }));
       // We need full sequelize array
       const posts = dbPostData.map(post => post.get({ plain: true }));
       //res.render('homepage', dbPostData[0].get({ plain: true }));
@@ -42,6 +44,14 @@ router.get('/', (req, res) => {
       console.log(err);
       res.status(500).json(err);
     });
+});
+
+router.get('/login', (req, res) => {
+  if (req.session.loggedIn) {
+    res.redirect('/');
+    return;
+  }
+  res.render('login');
 });
 
 module.exports = router;

@@ -6,14 +6,33 @@ const sequelize = require('./config/connection');
 const exphbs = require('express-handlebars');
 const hbs = exphbs.create({});
 // End of handlebars libraries //
+// Start of express sessions //
+const session = require('express-session');
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
+// End of express sessions //
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// init express session cookies
+const sess = {
+  secret: 'Super secret secret',
+  cookie: {},
+  resave: false,
+  saveUninitialized: true,
+  store: new SequelizeStore({
+    db: sequelize
+  })
+};
+
+// express. use express sessions which is connected to our database.
+app.use(session(sess));
 
 // handlebars init
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 
+// express sessions
 
 
 app.use(express.json());
