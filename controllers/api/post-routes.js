@@ -3,8 +3,10 @@ const router = require('express').Router();
 const { Post, User, Vote, Comment } = require('../../models');
 //To do calculations
 const sequelize = require('../../config/connection');
+const withAuth = require('../../utils/auth');
 
-// get all users
+
+// get all users6
 // select * from post
 router.get('/', (req, res) => {
     console.log('======================');
@@ -85,12 +87,14 @@ router.get('/:id', (req, res) => {
 });
 
 // Insert record
-router.post('/', (req, res) => {
+router.post('/',  withAuth, (req, res) => {
     // expects {title: 'Taskmaster goes public!', post_url: 'https://taskmaster.com/press', user_id: 1}
     Post.create({
       title: req.body.title,
       post_url: req.body.post_url,
-      user_id: req.body.user_id
+      // insomina test will use  user_id: req.body.user_id
+      // ussing session ID
+      user_id: req.session.user_id
     })
       .then(dbPostData => res.json(dbPostData))
       .catch(err => {
@@ -104,7 +108,7 @@ router.post('/', (req, res) => {
 // though. Otherwise, Express.js will think the word 
 //"upvote" is a valid parameter for /:id.
 // custom static method created in models/Post.js Post.upvote (two parameters
-router.put('/upvote', (req, res) => {
+router.put('/upvote', withAuth,  (req, res) => {
   // make sure the session exists first
   if (req.session) {
     // pass session id along with all destructured properties on req.body
@@ -119,7 +123,7 @@ router.put('/upvote', (req, res) => {
 });
 
 // Update record
-router.put('/:id', (req, res) => {
+router.put('/:id', withAuth,  (req, res) => {
     Post.update(
         {
         title: req.body.title
@@ -144,7 +148,7 @@ router.put('/:id', (req, res) => {
 });
 
 // Delete Record
-router.delete('/:id', (req, res) => {
+router.delete('/:id', withAuth,  (req, res) => {
     Post.destroy({
         where: {
         id: req.params.id

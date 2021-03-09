@@ -1,68 +1,15 @@
 const router = require('express').Router();
 const sequelize = require('../config/connection');
-const { Post, User, Comment } = require('../models');
+const { Post, User, Comment, Vote } = require('../models');
+const withAuth = require('../utils/auth');
 
-
-router.get('/', (req, res) => {
-  // console log session information
-  //console.log(req.session);
+// get all posts for dashboard
+router.get('/', withAuth, (req, res) => {
+  console.log(req.session);
+  console.log('======================');
   Post.findAll({
-    attributes: [
-      'id',
-      'post_url',
-      'title',
-      'created_at',
-      [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
-    ],
-    include: [
-      {
-        model: Comment,
-        attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
-        include: {
-          model: User,
-          attributes: ['username']
-        }
-      },
-      {
-        model: User,
-        attributes: ['username']
-      }
-    ]
-  })
-    .then(dbPostData => {
-      // pass a single post object into the homepage template
-      // note that we had res.json(dbPostData) now we use res.render
-      // render is from handlebars engine
-      // to avoid getting all of sequelize object, we need the plain rendering
-      // get({ plain: true }) will get us the attributes that we defined.
-     // console.log(dbPostData[0].get({ plain: true }));
-      // We need full sequelize array
-      const posts = dbPostData.map(post => post.get({ plain: true }));
-      //res.render('homepage', dbPostData[0].get({ plain: true }));
-      res.render('homepage', { 
-        posts,
-        loggedIn: req.session.loggedIn
-       });
-    })
-    .catch(err => {
-      console.log(err);
-      res.status(500).json(err);
-    });
-});
-
-router.get('/login', (req, res) => {
-  if (req.session.loggedIn) {
-    res.redirect('/');
-    return;
-  }
-  res.render('login');
-});
-
-// logic for single-post handlebar
-router.get('/post/:id', (req, res) => {
-  Post.findOne({
     where: {
-      id: req.params.id
+      user_id: req.session.user_id
     },
     attributes: [
       'id',
@@ -87,22 +34,52 @@ router.get('/post/:id', (req, res) => {
     ]
   })
     .then(dbPostData => {
-      if (!dbPostData) {
-        res.status(404).json({ message: 'No post found with this id' });
-        return;
-      }
-
-      // serialize the data to make it visible
-      const post = dbPostData.get({ plain: true });
-
-      // pass data to template
-      res.render('single-post', { 
-        post,
-        loggedIn: req.session.loggedIn
-     });
+      const posts = dbPostData.map(post => post.get({ plain: true }));
+      res.render('dashboard', { posts, loggedIn: true });
     })
     .catch(err => {
       console.log(err);
+      res.status(500).json(err);
+    });
+});
+
+router.get('/edit/:id', (req, res) => {
+  Post.findByPk(req.params.id, {
+    attributes: [
+      'id',
+      'post_url',
+      'title',
+      'created_at',
+      [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
+    ],
+    include: [
+      {
+        model: Comment,
+        attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+        include: {
+          model: User,
+          attributes: ['username']
+        }
+      },
+      {
+        model: User,
+        attributes: ['username']
+      }
+    ]
+  })
+    .then(dbPostData => {
+      if (dbPostData) {
+        const post = dbPostData.get({ plain: true });
+        
+        res.render('edit-post', {
+          post,
+          loggedIn: true
+        });
+      } else {
+        res.status(404).end();
+      }
+    })
+    .catch(err => {
       res.status(500).json(err);
     });
 });

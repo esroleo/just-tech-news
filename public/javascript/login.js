@@ -22,7 +22,9 @@ async function loginFormHandler(event) {
   
       if (response.ok) {
           // go back to homepage after loggin in
-        document.location.replace('/');
+          // updated - go to create dashboard after logging in
+        //document.location.replace('/');
+        document.location.replace('/dashboard');
       } else {
         alert(response.statusText);
       }
