@@ -1,0 +1,61 @@
+<!-- Initial template was expecting the objects of the array not the object itself --> 
+<!--
+<ol class="post-list">
+  <li>
+    <article class="post">
+      <div class="title">
+        <a href="{{post_url}}" target="_blank">{{title}}</a>
+        <span>({{post_url}})</span>
+      </div>
+      <div class="meta">
+        {{vote_count}} point(s) by {{user.username}} on
+        {{created_at}}
+        |
+        <a href="/post/{{id}}">{{comments.length}} comment(s)</a>
+      </div>
+    </article>
+  </li>
+</ol>
+-->
+
+<!-- The template accepts an object when rendered fromt the 
+home-routes.js controller api --> 
+
+<!-- Object post coming from the home-routes.js --> 
+
+
+
+<ol class="post-list">
+  {{#each posts as |post|}}
+  <li>
+    {{> post-info post }}
+  </li>
+  {{/each}}
+</ol>
+
+
+
+<!-- Another option is to create an variable to hold the renderd object --> 
+
+<!-- 
+
+  <ol class="post-list">
+  {{#each posts as |post|}}
+  <li>
+    <article class="post">
+      <div class="title">
+        <a href="{{post.post_url}}" target="_blank">{{post.title}}</a>
+        <span>({{post.post_url}})</span>
+      </div>
+      <div class="meta">
+        {{post.vote_count}} point(s) by {{post.user.username}} on
+        {{post.created_at}}
+        |
+        <a href="/post/{{post.id}}">{{post.comments.length}} comment(s)</a>
+      </div>
+    </article>
+  </li>
+  {{/each}}
+</ol>
+
+--> 
